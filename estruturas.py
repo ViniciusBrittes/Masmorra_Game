@@ -15,6 +15,7 @@ fase.get_penalty() -> retorna última penalidade aplicada (em segundos)
 """
 
 import random
+import heapq
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -232,7 +233,7 @@ class FaseArray(FaseBase):
         if self.usuario[pos] != self.sequencia[pos]:
             # erro — penalidade e não avança
             self.usuario.pop()
-            self.ultima_penalidade = 3
+            self.ultima_penalidade = 5
             return 3
 
         if len(self.usuario) == len(self.sequencia):
@@ -285,12 +286,34 @@ class FaseGrafos(FaseBase):
         }),
     ]
 
+    def _menor_caminho(self):
+        fila = [(0, self.inicio)]
+        visitados = {}
+
+        while fila:
+            custo, no = heapq.heappop(fila)
+
+            if no in visitados:
+                continue
+
+            visitados[no] = custo
+
+            if no == self.alvo:
+                return custo
+
+            for vizinho, peso in self.grafo[no]:
+                if vizinho not in visitados:
+                    heapq.heappush(fila, (custo + peso, vizinho))
+
+        return float("inf")
+    
     def reset(self):
         self.inicio, self.alvo, self.grafo = random.choice(self.GRAFOS)
         self.no_atual = self.inicio
         self.caminho = [self.inicio]
         self.custo = 0
         self.ultima_penalidade = 0
+        self._custo_minimo = self._menor_caminho()
         self._atualizar_acoes()
 
     def _atualizar_acoes(self):
@@ -312,13 +335,17 @@ class FaseGrafos(FaseBase):
         self.caminho.append(prox)
 
         if self.no_atual == self.alvo:
-            return "win"
-
+            if self.custo == self._custo_minimo:
+                return "win"
+            else:
+                self.ultima_penalidade = 5
+                return 5
+        
         self._atualizar_acoes()
         return None
 
     def hint(self):
-        return f"Vá de {self.inicio} até {self.alvo} — Custo atual: {self.custo}"
+        return f"Vá de {self.inicio} até {self.alvo} — Custo atual: {self.custo} | Melhor: {self._custo_minimo}"
 
     def state_text(self):
         return f"Caminho: {' → '.join(self.caminho)}"

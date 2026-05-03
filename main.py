@@ -67,7 +67,7 @@ class EngineVisual:
         self.particulas = []
         self._gerar_particulas_bg()
 
-        self.tempo_total_frames = 300 * FPS  # Exemplo: 5 minutos (300 segundos) para fechar o jogo
+        self.tempo_total_frames = 120 * FPS  # Exemplo: 2 minutos (120 segundos) para fechar o jogo
 
     def _desenhar_menu_dev(self):
         ox, oy = self._offset_shake()
@@ -162,7 +162,7 @@ class EngineVisual:
                     self.estado = "JOGANDO"
                     self.fases = criar_fases()
                     self.fase_atual_num = 1
-                    self.tempo_total_frames = 300 * FPS # Reseta o tempo
+                    self.tempo_total_frames = 120 * FPS # Reseta o tempo
                 elif self.menu_idx == 1:
                     self.estado = "MENU_DEV" # Vai para a tela de escolha
                 else:
@@ -174,11 +174,18 @@ class EngineVisual:
                 self.estado = "JOGANDO"
                 self.fases = criar_fases()
                 self.fase_atual_num = int(pygame.key.name(tecla))
-                self.tempo_total_frames = 300 * FPS
+                self.tempo_total_frames = 120 * FPS
             elif tecla == pygame.K_ESCAPE: # Voltar ao menu
                 self.estado = "MENU"
 
         elif self.estado == "JOGANDO":
+
+            if tecla == pygame.K_ESCAPE:
+                self.estado = "MENU"
+                self.fase_atual_num = 1
+                self.fases = criar_fases()
+                return
+            
             fase = self.fases[self.fase_atual_num]
             if tecla in (pygame.K_a, pygame.K_LEFT):
                 fase.move(-1)
@@ -188,6 +195,7 @@ class EngineVisual:
                 fase.entrar()
             elif tecla in (pygame.K_s, pygame.K_DOWN):
                 fase.sair()
+            
             elif tecla in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
                 resultado = fase.apply_selected()
                 if resultado == "win":
@@ -197,6 +205,14 @@ class EngineVisual:
                         self.estado = "VITORIA"
                     else:
                         self.fases[self.fase_atual_num].reset()
+
+                elif isinstance(resultado, (int, float)): #penalidade
+                    frames_penalidade = int(resultado * FPS)
+                    self.tempo_total_frames -= frames_penalidade
+
+                    self._disparar_flash(COR_VERMELHO, 8)
+                    self._disparar_shake(8)
+
                 elif resultado == "lose":
                     self._disparar_shake(15)
                     self._disparar_flash(COR_VERMELHO, 12)
