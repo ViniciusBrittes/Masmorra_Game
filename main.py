@@ -57,7 +57,7 @@ class EngineVisual:
         self.fase_atual_num = 1
         self.estado         = "MENU"
         self.menu_idx       = 0
-        self.menu_itens     = ["INICIAR EXPEDICAO", "SAIR DA MASMORRA"]
+        self.menu_itens     = ["INICIAR EXPEDICAO", "MODO DEV", "SAIR DA MASMORRA"]
 
         self.flash_timer = 0
         self.flash_cor   = None
@@ -66,34 +66,19 @@ class EngineVisual:
         self.tick       = 0
         self.particulas = []
         self._gerar_particulas_bg()
-# ─────────────────────────────────────────────────────────────────────
-    # MENU PRINCIPAL
-    # ─────────────────────────────────────────────────────────────────────
-    def _desenhar_menu(self):
-        # Caixa / Moldura principal do menu
-        bw, bh = 700, 400
-        bx, by = (LARGURA - bw) // 2, (ALTURA - bh) // 2 - 20
-        self._desenhar_moldura((bx, by, bw, bh), COR_MOLDURA)
 
-        # Títulos
-        self._desenhar_texto("MASMORRA DAS", self.fonte_titulo, COR_VERDE,
-                             LARGURA // 2, by + 60, centro=True)
-        self._desenhar_texto("ESTRUTURAS DE DADOS", self.fonte_titulo, COR_VERDE,
-                             LARGURA // 2, by + 110, centro=True)
+        self.tempo_total_frames = 300 * FPS  # Exemplo: 5 minutos (300 segundos) para fechar o jogo
 
-        # Itens do Menu
-        for i, item in enumerate(self.menu_itens):
-            is_sel = (i == self.menu_idx)
-            cor = COR_AMBAR if is_sel else COR_TEXTO_DIM
-            txt = f">> {item} <<" if is_sel else f"   {item}   "
-            y = by + 220 + (i * 60)
-            
-            self._desenhar_texto(txt, self.fonte_mono_g, cor,
-                                 LARGURA // 2, y, centro=True)
-
-        # Rodapé de controles
-        self._desenhar_texto("[W/S] NAVEGAR   [F/ESPAÇO] CONFIRMAR", self.fonte_pequena, COR_TEXTO_DIM,
-                             LARGURA // 2, ALTURA - 40, centro=True)
+    def _desenhar_menu_dev(self):
+        ox, oy = self._offset_shake()
+        self._desenhar_texto("[ MODO DO DESENVOLVEDOR ]", self.fonte_titulo, COR_ROXO, 
+                             LARGURA//2 + ox, 150 + oy, centro=True)
+        self._desenhar_texto("Pressione 1: Fase de Pilha", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 250 + oy, centro=True)
+        self._desenhar_texto("Pressione 2: Fase de Fila", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 300 + oy, centro=True)
+        self._desenhar_texto("Pressione 3: Fase de Array", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 350 + oy, centro=True)
+        self._desenhar_texto("Pressione 4: Fase de Grafos", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 400 + oy, centro=True)
+        self._desenhar_texto("[ESC] Voltar", self.fonte_pequena, COR_AMBAR, LARGURA//2 + ox, 550 + oy, centro=True)
+        
     # ─────────────────────────────────────────────────────────────────────
     # LOOP PRINCIPAL
     # ─────────────────────────────────────────────────────────────────────
@@ -110,6 +95,8 @@ class EngineVisual:
 
             if self.estado == "MENU":
                 self._desenhar_menu()
+            elif self.estado == "MENU_DEV":
+                self._desenhar_menu_dev()
             elif self.estado == "JOGANDO":
                 self._desenhar_fase()
             elif self.estado == "VITORIA":
@@ -122,10 +109,45 @@ class EngineVisual:
             if self.flash_timer > 0:
                 self._aplicar_flash()
 
+            if self.estado == "JOGANDO":
+                self.tempo_total_frames -= 1
+                if self.tempo_total_frames <= 0:
+                    self._disparar_shake(20)
+                    self._disparar_flash(COR_VERMELHO, 15)
+                    self.estado = "DERROTA"
+
             self._aplicar_scanlines()
             pygame.display.flip()
             self.clock.tick(FPS)
 
+    def _desenhar_menu(self):
+        ox, oy = self._offset_shake()
+        
+        # Título Estilizado
+        self._desenhar_texto("MASMORRA DAS", self.fonte_sub, COR_TEXTO_DIM, 
+                             LARGURA//2 + ox, 180 + oy, centro=True)
+        self._desenhar_texto("ESTRUTURAS DE DADOS", self.fonte_titulo, COR_AMBAR, 
+                             LARGURA//2 + ox, 230 + oy, centro=True)
+        
+        # Opções do Menu
+        for i, item in enumerate(self.menu_itens):
+            is_sel = (i == self.menu_idx)
+            cor = COR_VERDE if is_sel else COR_TEXTO_DIM
+            texto = f"> {item} <" if is_sel else item
+            
+            # Efeito de pulso na seleção
+            if is_sel:
+                p = self._glow()
+                cor = tuple(int(c * (0.7 + 0.3 * p)) for c in COR_VERDE)
+            
+            self._desenhar_texto(texto, self.fonte_sub, cor, 
+                                 LARGURA//2 + ox, 380 + i * 50 + oy, centro=True)
+            
+        # Rodapé
+        self._desenhar_texto("W/S para navegar • SPACE/F para entrar", 
+                             self.fonte_pequena, COR_TEXTO_DIM, 
+                             LARGURA//2 + ox, ALTURA - 60 + oy, centro=True)
+        
     # ─────────────────────────────────────────────────────────────────────
     # INPUT
     # ─────────────────────────────────────────────────────────────────────
@@ -138,10 +160,23 @@ class EngineVisual:
             elif tecla in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
                 if self.menu_idx == 0:
                     self.estado = "JOGANDO"
-                    self.fases  = criar_fases()
+                    self.fases = criar_fases()
                     self.fase_atual_num = 1
+                    self.tempo_total_frames = 300 * FPS # Reseta o tempo
+                elif self.menu_idx == 1:
+                    self.estado = "MENU_DEV" # Vai para a tela de escolha
                 else:
                     pygame.quit(); sys.exit()
+
+        elif self.estado == "MENU_DEV":
+            # pressionar 1, 2, 3 ou 4 vai direto para a fase
+            if tecla in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
+                self.estado = "JOGANDO"
+                self.fases = criar_fases()
+                self.fase_atual_num = int(pygame.key.name(tecla))
+                self.tempo_total_frames = 300 * FPS
+            elif tecla == pygame.K_ESCAPE: # Voltar ao menu
+                self.estado = "MENU"
 
         elif self.estado == "JOGANDO":
             fase = self.fases[self.fase_atual_num]
@@ -296,6 +331,15 @@ class EngineVisual:
         self._desenhar_texto(teclas, self.fonte_pequena, COR_TEXTO_DIM,
                              LARGURA//2+ox, ALTURA-30+oy, centro=True)
 
+        # --- Adicione isto no final do método ---
+        segundos_restantes = max(0, self.tempo_total_frames // FPS)
+        mins = segundos_restantes // 60
+        segs = segundos_restantes % 60
+        cor_timer = COR_VERDE if segundos_restantes > 60 else COR_VERMELHO
+        
+        self._desenhar_texto(f"TEMPO: {mins:02d}:{segs:02d}", self.fonte_sub, cor_timer, 
+                             LARGURA - 140 + ox, 46 + oy, centro=True)
+        
     # ─────────────────────────────────────────────────────────────────────
     # DISPATCHER
     # ─────────────────────────────────────────────────────────────────────
@@ -431,13 +475,6 @@ class EngineVisual:
             self._desenhar_texto("mover para ca", self.fonte_pequena, ac,
                                  (ax1+ax2)//2, ay-18, centro=True, sombra=False)
 
-        # ── contador de movimentos ───────────────────────────────────────
-        restam  = fase.max_movimentos - fase.movimentos
-        cor_mov = COR_VERDE if restam > 12 else COR_AMBAR if restam > 5 else COR_VERMELHO
-        self._desenhar_texto(
-            f"MOVIMENTOS: {fase.movimentos}/{fase.max_movimentos}  ({restam} restantes)",
-            self.fonte_pequena, cor_mov,
-            LARGURA//2+ox, AY+AH-13, centro=True, sombra=False)
 
     # ─────────────────────────────────────────────────────────────────────
     # FASE 2 — FILA
@@ -544,9 +581,11 @@ class EngineVisual:
         # posições fixas para o grafo A-B-C-D
         nos_pos = {
             "A": (170, AY+100),
-            "B": (400, AY+45),
-            "C": (400, AY+165),
-            "D": (630, AY+105),
+            "B": (350, AY+50),
+            "C": (350, AY+150),
+            "D": (530, AY+50),
+            "E": (530, AY+150),
+            "F": (710, AY+100),
         }
 
         # arestas
