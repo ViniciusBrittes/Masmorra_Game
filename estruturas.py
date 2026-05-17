@@ -36,6 +36,7 @@ class FaseBase:
             return
         self.idx_acao = (self.idx_acao + direcao) % len(self.acoes)
 
+
     def entrar(self):
         pass
 
@@ -155,7 +156,6 @@ class FaseFila(FaseBase):
 
     def apply_selected(self):
         if not self.esteira:
-            # sem mais letras, mas não completou
             self.ultima_penalidade = 5
             return 5
 
@@ -170,12 +170,10 @@ class FaseFila(FaseBase):
                     return "win"
                 return None
             else:
-                # letra errada no placar
-                self.esteira.insert(0, letra)  # devolve
+                self.esteira.insert(0, letra)
                 self.ultima_penalidade = 3
                 return 3
         else:
-            # reenfileirar
             self.esteira.append(letra)
             return None
 
@@ -194,24 +192,52 @@ class FaseArray(FaseBase):
     def reset(self):
         self.sequencia = [random.randint(1, 9) for _ in range(5)]
         self.usuario = []
-        self.tempo_memorizar = 90  # 3 segundos a 30fps
-        self.acoes = ["NOVA SEQ"] + [str(i) for i in range(1, 10)] + ["APAGAR"]
-        self.idx_acao = 1  # começa no "1"
+        self.tempo_memorizar = 90
+        self.acoes = ["NOVA SEQ"] + [str(i) for i in range(1, 10)]
+        self.row = 3
+        self.col = 0
         self.ultima_penalidade = 0
 
     def nova_sequencia(self):
-        """Gera nova sequência e cobra penalidade."""
         self.sequencia = [random.randint(1, 9) for _ in range(5)]
         self.usuario = []
         self.tempo_memorizar = 90
         self.ultima_penalidade = 8
         return 8
 
-    def apagar(self):
-        """Remove último dígito."""
-        if self.usuario:
-            self.usuario.pop()
-        return None
+    def move(self, direcao):
+        pass
+
+    def move_2d(self, dx, dy):
+        new_row = self.row + dy
+        new_col = self.col + dx
+
+        if new_row < 0:
+            new_row = 3
+        elif new_row > 3:
+            new_row = 0
+
+        if new_col < 0:
+            new_col = 2
+        elif new_col > 2:
+            new_col = 0
+
+        if new_row == 3 and new_col != 0:
+            return
+
+        if self.row == 3 and new_row != 3:
+            new_col = 0
+
+        self.row = new_row
+        self.col = new_col
+        self._atualizar_idx_acao()
+
+    def _atualizar_idx_acao(self):
+        if self.row == 3:
+            self.idx_acao = 0
+        else:
+            digito = 7 - self.row * 3 + self.col
+            self.idx_acao = digito
 
     def apply_selected(self):
         if self.tempo_memorizar > 0:
@@ -222,19 +248,14 @@ class FaseArray(FaseBase):
         if acao == "NOVA SEQ":
             return self.nova_sequencia()
 
-        if acao == "APAGAR":
-            return self.apagar()
-
-        # é um dígito
         valor = int(acao)
         self.usuario.append(valor)
         pos = len(self.usuario) - 1
 
         if self.usuario[pos] != self.sequencia[pos]:
-            # erro — penalidade e não avança
             self.usuario.pop()
             self.ultima_penalidade = 5
-            return 3
+            return 5
 
         if len(self.usuario) == len(self.sequencia):
             return "win"
@@ -255,34 +276,58 @@ class FaseArray(FaseBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# FASE 4 — GRAFOS (múltiplos grafos complexos)
+# FASE 4 — MAPA DO TESOURO
 # ═══════════════════════════════════════════════════════════════════════════
 
 class FaseGrafos(FaseBase):
     GRAFOS = [
-        # Grafo 1: Simples (4 nós)
-        ("A", "D", {
-            "A": [("B", 2), ("C", 5)],
-            "B": [("A", 2), ("D", 4), ("C", 3)],
-            "C": [("A", 5), ("B", 3), ("D", 1)],
-            "D": [("B", 4), ("C", 1)],
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Ponte", 2), ("Caverna", 5)],
+            "Ponte": [("Inicio", 2), ("Tesouro", 4), ("Caverna", 3)],
+            "Caverna": [("Inicio", 5), ("Ponte", 3), ("Tesouro", 1)],
+            "Tesouro": [("Ponte", 4), ("Caverna", 1)],
         }),
-        # Grafo 2: Médio (5 nós)
-        ("A", "E", {
-            "A": [("B", 3), ("C", 6)],
-            "B": [("A", 3), ("D", 2), ("E", 8)],
-            "C": [("A", 6), ("D", 4)],
-            "D": [("B", 2), ("C", 4), ("E", 3)],
-            "E": [("B", 8), ("D", 3)],
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Vila", 3), ("Floresta", 6)],
+            "Vila": [("Inicio", 3), ("Ruinas", 2), ("Tesouro", 8)],
+            "Floresta": [("Inicio", 6), ("Ruinas", 4)],
+            "Ruinas": [("Vila", 2), ("Floresta", 4), ("Tesouro", 3)],
+            "Tesouro": [("Vila", 8), ("Ruinas", 3)],
         }),
-        # Grafo 3: Complexo (6 nós)
-        ("A", "F", {
-            "A": [("B", 4), ("C", 2)],
-            "B": [("A", 4), ("D", 5)],
-            "C": [("A", 2), ("D", 8), ("E", 3)],
-            "D": [("B", 5), ("C", 8), ("F", 6)],
-            "E": [("C", 3), ("F", 2)],
-            "F": [("D", 6), ("E", 2)],
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Oasis", 4), ("Duna", 2)],
+            "Oasis": [("Inicio", 4), ("Templo", 5)],
+            "Duna": [("Inicio", 2), ("Templo", 8), ("Tumba", 3)],
+            "Templo": [("Oasis", 5), ("Duna", 8), ("Tesouro", 6)],
+            "Tumba": [("Duna", 3), ("Tesouro", 2)],
+            "Tesouro": [("Templo", 6), ("Tumba", 2)],
+        }),
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Pico", 7), ("Vale", 3)],
+            "Pico": [("Inicio", 7), ("Lago", 4), ("Tesouro", 6)],
+            "Vale": [("Inicio", 3), ("Lago", 5), ("Gruta", 8)],
+            "Lago": [("Pico", 4), ("Vale", 5), ("Tesouro", 2), ("Gruta", 3)],
+            "Tesouro": [("Pico", 6), ("Lago", 2)],
+            "Gruta": [("Vale", 8), ("Lago", 3)],
+        }),
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Praia", 4), ("Farol", 6), ("Porto", 5)],
+            "Praia": [("Inicio", 4), ("Recife", 7), ("Navio", 8)],
+            "Farol": [("Inicio", 6), ("Recife", 3)],
+            "Porto": [("Inicio", 5), ("Navio", 4)],
+            "Recife": [("Praia", 7), ("Farol", 3), ("Tesouro", 6)],
+            "Navio": [("Praia", 8), ("Porto", 4), ("Tesouro", 3)],
+            "Tesouro": [("Recife", 6), ("Navio", 3)],
+        }),
+        ("Inicio", "Tesouro", {
+            "Inicio": [("Tunel", 3), ("Mina", 7)],
+            "Tunel": [("Inicio", 3), ("Poço", 6), ("Camara", 2)],
+            "Mina": [("Inicio", 7), ("Camara", 5), ("Abismo", 4)],
+            "Poço": [("Tunel", 6), ("Cripta", 3)],
+            "Camara": [("Tunel", 2), ("Mina", 5), ("Cripta", 8), ("Tesouro", 9)],
+            "Abismo": [("Mina", 4), ("Tesouro", 2)],
+            "Cripta": [("Poço", 3), ("Camara", 8), ("Tesouro", 4)],
+            "Tesouro": [("Camara", 9), ("Abismo", 2), ("Cripta", 4)],
         }),
     ]
 
@@ -292,19 +337,14 @@ class FaseGrafos(FaseBase):
 
         while fila:
             custo, no = heapq.heappop(fila)
-
             if no in visitados:
                 continue
-
             visitados[no] = custo
-
             if no == self.alvo:
                 return custo
-
             for vizinho, peso in self.grafo[no]:
                 if vizinho not in visitados:
                     heapq.heappush(fila, (custo + peso, vizinho))
-
         return float("inf")
     
     def reset(self):
@@ -318,7 +358,7 @@ class FaseGrafos(FaseBase):
 
     def _atualizar_acoes(self):
         vizinhos = self.grafo[self.no_atual]
-        self.acoes = [f"{v} (+{w})" for v, w in vizinhos]
+        self.acoes = [f"{v} ({w}d)" for v, w in vizinhos]
         self._vizinhos = vizinhos
         if not self.acoes:
             self.idx_acao = 0
@@ -345,15 +385,11 @@ class FaseGrafos(FaseBase):
         return None
 
     def hint(self):
-        return f"Vá de {self.inicio} até {self.alvo} — Custo atual: {self.custo} | Melhor: {self._custo_minimo}"
+        return f"Encontre a rota mais rapida ate o Tesouro! (Melhor: {self._custo_minimo} dias)"
 
     def state_text(self):
-        return f"Caminho: {' → '.join(self.caminho)}"
+        return f"Jornada: {' -> '.join(self.caminho)} | Dias: {self.custo}"
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# FACTORY
-# ═══════════════════════════════════════════════════════════════════════════
 
 def criar_fases():
     return {

@@ -19,8 +19,8 @@ from estruturas import criar_fases
 # ═══════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO
 # ═══════════════════════════════════════════════════════════════════════════
-LARGURA = 960
-ALTURA  = 640
+LARGURA = 480
+ALTURA  = 320
 FPS     = 30
 
 COR_BG        = (8,  10,  14)
@@ -47,11 +47,12 @@ class EngineVisual:
         pygame.display.set_caption("MASMORRA DAS ESTRUTURAS DE DADOS")
         self.clock = pygame.time.Clock()
 
-        self.fonte_titulo  = pygame.font.SysFont("couriernew,consolas,monospace", 42, bold=True)
-        self.fonte_sub     = pygame.font.SysFont("couriernew,consolas,monospace", 22, bold=True)
-        self.fonte_texto   = pygame.font.SysFont("couriernew,consolas,monospace", 20)
-        self.fonte_mono_g  = pygame.font.SysFont("couriernew,consolas,monospace", 28, bold=True)
-        self.fonte_pequena = pygame.font.SysFont("couriernew,consolas,monospace", 16)
+        # Ajuste de Fontes para Resolução 480x320
+        self.fonte_titulo  = pygame.font.SysFont("couriernew,consolas,monospace", 24, bold=True)
+        self.fonte_sub     = pygame.font.SysFont("couriernew,consolas,monospace", 15, bold=True)
+        self.fonte_texto   = pygame.font.SysFont("couriernew,consolas,monospace", 13)
+        self.fonte_mono_g  = pygame.font.SysFont("couriernew,consolas,monospace", 16, bold=True)
+        self.fonte_pequena = pygame.font.SysFont("couriernew,consolas,monospace", 10)
 
         self.fases          = criar_fases()
         self.fase_atual_num = 1
@@ -67,21 +68,18 @@ class EngineVisual:
         self.particulas = []
         self._gerar_particulas_bg()
 
-        self.tempo_total_frames = 120 * FPS  # Exemplo: 2 minutos (120 segundos) para fechar o jogo
+        self.tempo_total_frames = 120 * FPS
 
     def _desenhar_menu_dev(self):
         ox, oy = self._offset_shake()
         self._desenhar_texto("[ MODO DO DESENVOLVEDOR ]", self.fonte_titulo, COR_ROXO, 
-                             LARGURA//2 + ox, 150 + oy, centro=True)
-        self._desenhar_texto("Pressione 1: Fase de Pilha", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 250 + oy, centro=True)
-        self._desenhar_texto("Pressione 2: Fase de Fila", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 300 + oy, centro=True)
-        self._desenhar_texto("Pressione 3: Fase de Array", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 350 + oy, centro=True)
-        self._desenhar_texto("Pressione 4: Fase de Grafos", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 400 + oy, centro=True)
-        self._desenhar_texto("[ESC] Voltar", self.fonte_pequena, COR_AMBAR, LARGURA//2 + ox, 550 + oy, centro=True)
+                             LARGURA//2 + ox, 45 + oy, centro=True)
+        self._desenhar_texto("Pressione 1: Fase de Pilha", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 100 + oy, centro=True)
+        self._desenhar_texto("Pressione 2: Fase de Fila", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 130 + oy, centro=True)
+        self._desenhar_texto("Pressione 3: Fase de Array", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 160 + oy, centro=True)
+        self._desenhar_texto("Pressione 4: Fase de Grafos", self.fonte_sub, COR_TEXTO_DIM, LARGURA//2 + ox, 190 + oy, centro=True)
+        self._desenhar_texto("[ESC] Voltar", self.fonte_pequena, COR_AMBAR, LARGURA//2 + ox, ALTURA - 25 + oy, centro=True)
         
-    # ─────────────────────────────────────────────────────────────────────
-    # LOOP PRINCIPAL
-    # ─────────────────────────────────────────────────────────────────────
     def rodar(self):
         while True:
             self.tick += 1
@@ -123,34 +121,27 @@ class EngineVisual:
     def _desenhar_menu(self):
         ox, oy = self._offset_shake()
         
-        # Título Estilizado
         self._desenhar_texto("MASMORRA DAS", self.fonte_sub, COR_TEXTO_DIM, 
-                             LARGURA//2 + ox, 180 + oy, centro=True)
+                             LARGURA//2 + ox, 60 + oy, centro=True)
         self._desenhar_texto("ESTRUTURAS DE DADOS", self.fonte_titulo, COR_AMBAR, 
-                             LARGURA//2 + ox, 230 + oy, centro=True)
+                             LARGURA//2 + ox, 95 + oy, centro=True)
         
-        # Opções do Menu
         for i, item in enumerate(self.menu_itens):
             is_sel = (i == self.menu_idx)
             cor = COR_VERDE if is_sel else COR_TEXTO_DIM
             texto = f"> {item} <" if is_sel else item
             
-            # Efeito de pulso na seleção
             if is_sel:
                 p = self._glow()
                 cor = tuple(int(c * (0.7 + 0.3 * p)) for c in COR_VERDE)
             
             self._desenhar_texto(texto, self.fonte_sub, cor, 
-                                 LARGURA//2 + ox, 380 + i * 50 + oy, centro=True)
+                                 LARGURA//2 + ox, 160 + i * 30 + oy, centro=True)
             
-        # Rodapé
         self._desenhar_texto("W/S para navegar • SPACE/F para entrar", 
                              self.fonte_pequena, COR_TEXTO_DIM, 
-                             LARGURA//2 + ox, ALTURA - 60 + oy, centro=True)
+                             LARGURA//2 + ox, ALTURA - 25 + oy, centro=True)
         
-    # ─────────────────────────────────────────────────────────────────────
-    # INPUT
-    # ─────────────────────────────────────────────────────────────────────
     def _processar_teclado(self, tecla):
         if self.estado == "MENU":
             if tecla in (pygame.K_w, pygame.K_UP):
@@ -162,24 +153,22 @@ class EngineVisual:
                     self.estado = "JOGANDO"
                     self.fases = criar_fases()
                     self.fase_atual_num = 1
-                    self.tempo_total_frames = 120 * FPS # Reseta o tempo
+                    self.tempo_total_frames = 120 * FPS
                 elif self.menu_idx == 1:
-                    self.estado = "MENU_DEV" # Vai para a tela de escolha
+                    self.estado = "MENU_DEV"
                 else:
                     pygame.quit(); sys.exit()
 
         elif self.estado == "MENU_DEV":
-            # pressionar 1, 2, 3 ou 4 vai direto para a fase
             if tecla in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
                 self.estado = "JOGANDO"
                 self.fases = criar_fases()
                 self.fase_atual_num = int(pygame.key.name(tecla))
                 self.tempo_total_frames = 120 * FPS
-            elif tecla == pygame.K_ESCAPE: # Voltar ao menu
+            elif tecla == pygame.K_ESCAPE:
                 self.estado = "MENU"
 
         elif self.estado == "JOGANDO":
-
             if tecla == pygame.K_ESCAPE:
                 self.estado = "MENU"
                 self.fase_atual_num = 1
@@ -187,16 +176,27 @@ class EngineVisual:
                 return
             
             fase = self.fases[self.fase_atual_num]
-            if tecla in (pygame.K_a, pygame.K_LEFT):
-                fase.move(-1)
-            elif tecla in (pygame.K_d, pygame.K_RIGHT):
-                fase.move(1)
-            elif tecla in (pygame.K_w, pygame.K_UP):
-                fase.entrar()
-            elif tecla in (pygame.K_s, pygame.K_DOWN):
-                fase.sair()
             
-            elif tecla in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
+            if self.fase_atual_num == 3:
+                if tecla in (pygame.K_a, pygame.K_LEFT):
+                    fase.move_2d(-1, 0)
+                elif tecla in (pygame.K_d, pygame.K_RIGHT):
+                    fase.move_2d(1, 0)
+                elif tecla in (pygame.K_w, pygame.K_UP):
+                    fase.move_2d(0, -1)
+                elif tecla in (pygame.K_s, pygame.K_DOWN):
+                    fase.move_2d(0, 1)
+            else:
+                if tecla in (pygame.K_a, pygame.K_LEFT):
+                    fase.move(-1)
+                elif tecla in (pygame.K_d, pygame.K_RIGHT):
+                    fase.move(1)
+                elif tecla in (pygame.K_w, pygame.K_UP):
+                    fase.entrar()
+                elif tecla in (pygame.K_s, pygame.K_DOWN):
+                    fase.sair()
+            
+            if tecla in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
                 resultado = fase.apply_selected()
                 if resultado == "win":
                     self._disparar_flash(COR_VERDE, 12)
@@ -205,14 +205,11 @@ class EngineVisual:
                         self.estado = "VITORIA"
                     else:
                         self.fases[self.fase_atual_num].reset()
-
-                elif isinstance(resultado, (int, float)): #penalidade
+                elif isinstance(resultado, (int, float)):
                     frames_penalidade = int(resultado * FPS)
                     self.tempo_total_frames -= frames_penalidade
-
                     self._disparar_flash(COR_VERMELHO, 8)
                     self._disparar_shake(8)
-
                 elif resultado == "lose":
                     self._disparar_shake(15)
                     self._disparar_flash(COR_VERMELHO, 12)
@@ -224,22 +221,19 @@ class EngineVisual:
                 self.fase_atual_num = 1
                 self.fases = criar_fases()
 
-    # ─────────────────────────────────────────────────────────────────────
-    # FUNDO / EFEITOS
-    # ─────────────────────────────────────────────────────────────────────
     def _gerar_particulas_bg(self):
         self.particulas = [
             {"x": random.randint(0, LARGURA), "y": random.randint(0, ALTURA),
-             "vy": random.uniform(0.2, 0.8),  "size": random.choice([1, 1, 2]),
-             "brilho": random.randint(60, 150)}
-            for _ in range(40)
+             "vy": random.uniform(0.2, 0.5),  "size": random.choice([1, 1, 2]),
+             "brilho": random.randint(60, 130)}
+            for _ in range(25)
         ]
 
     def _desenhar_fundo(self):
         self.tela.fill(COR_BG)
-        for x in range(0, LARGURA, 40):
+        for x in range(0, LARGURA, 30):
             pygame.draw.line(self.tela, COR_BG_GRID, (x, 0), (x, ALTURA), 1)
-        for y in range(0, ALTURA, 40):
+        for y in range(0, ALTURA, 30):
             pygame.draw.line(self.tela, COR_BG_GRID, (0, y), (LARGURA, y), 1)
         for p in self.particulas:
             p["y"] -= p["vy"]
@@ -251,20 +245,20 @@ class EngineVisual:
 
     def _vinheta(self):
         ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-        for i in range(60):
-            a = int(80 * (i / 60) ** 2)
+        for i in range(30):
+            a = int(60 * (i / 30) ** 2)
             pygame.draw.rect(ov, (0, 0, 0, a), (i, i, LARGURA-2*i, ALTURA-2*i), 1)
         self.tela.blit(ov, (0, 0))
 
     def _aplicar_scanlines(self):
         ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-        for y in range(0, ALTURA, 3):
-            pygame.draw.line(ov, (0, 0, 0, 35), (0, y), (LARGURA, y), 1)
+        for y in range(0, ALTURA, 2):
+            pygame.draw.line(ov, (0, 0, 0, 25), (0, y), (LARGURA, y), 1)
         self.tela.blit(ov, (0, 0))
 
     def _aplicar_flash(self):
         ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-        a  = int(160 * (self.flash_timer / 12))
+        a  = int(140 * (self.flash_timer / 12))
         ov.fill((*self.flash_cor, a))
         self.tela.blit(ov, (0, 0))
         self.flash_timer -= 1
@@ -278,28 +272,23 @@ class EngineVisual:
     def _offset_shake(self):
         if self.shake_timer > 0:
             self.shake_timer -= 1
-            return random.randint(-5, 5), random.randint(-5, 5)
+            return random.randint(-3, 3), random.randint(-3, 3)
         return 0, 0
 
-    # ─────────────────────────────────────────────────────────────────────
-    # PRIMITIVAS
-    # ─────────────────────────────────────────────────────────────────────
     def _desenhar_moldura(self, rect, cor=COR_MOLDURA, titulo=None):
         x, y, w, h = rect
-        pygame.draw.rect(self.tela, cor, rect, 2)
-        pygame.draw.rect(self.tela, cor, (x+4, y+4, w-8, h-8), 1)
-        for cx, cy in [(x,y),(x+w,y),(x,y+h),(x+w,y+h)]:
-            pygame.draw.circle(self.tela, cor, (cx, cy), 3)
+        pygame.draw.rect(self.tela, cor, rect, 1)
+        pygame.draw.rect(self.tela, cor, (x+2, y+2, w-4, h-4), 1)
         if titulo:
             t = self.fonte_pequena.render(f" {titulo} ", True, COR_BG, cor)
-            self.tela.blit(t, (x+20, y-8))
+            self.tela.blit(t, (x+12, y-6))
 
     def _desenhar_texto(self, texto, fonte, cor, x, y, centro=False, sombra=True):
         if sombra:
             s = fonte.render(texto, True, (0, 0, 0))
             r = s.get_rect()
-            if centro: r.center  = (x+2, y+2)
-            else:      r.topleft = (x+2, y+2)
+            if centro: r.center  = (x+1, y+1)
+            else:      r.topleft = (x+1, y+1)
             self.tela.blit(s, r)
         sup = fonte.render(texto, True, cor)
         r   = sup.get_rect()
@@ -308,57 +297,54 @@ class EngineVisual:
         self.tela.blit(sup, r)
 
     def _glow(self):
-        return (math.sin(self.tick * 0.12) + 1) / 2
+        return (math.sin(self.tick * 0.15) + 1) / 2
 
-    # ─────────────────────────────────────────────────────────────────────
-    # FRAME COMPARTILHADO (cabeçalho + hint + rodapé)
-    # ─────────────────────────────────────────────────────────────────────
     def _desenhar_frame_fase(self, ox, oy):
         fase  = self.fases[self.fase_atual_num]
         nomes = {1:"PILHA (LIFO)", 2:"FILA (FIFO)",
-                 3:"ARRAY (INDICES)", 4:"GRAFOS (MENOR CAMINHO)"}
+                 3:"ARRAY (INDICES)", 4:"GRAFOS (MAPA TESOURO)"}
 
-        # cabeçalho
-        self._desenhar_moldura((20+ox, 15+oy, LARGURA-40, 62),
+        # Cabeçalho compacto
+        self._desenhar_moldura((15+ox, 10+oy, LARGURA-30, 42),
                                COR_CIANO_DIM, titulo=f"FASE {self.fase_atual_num}/4")
         self._desenhar_texto(nomes.get(self.fase_atual_num,"???"),
                              self.fonte_sub, COR_CIANO,
-                             LARGURA//2+ox, 46+oy, centro=True)
+                             LARGURA//2+ox, 31+oy, centro=True)
         for i in range(4):
-            cx = 55+i*28+ox; cy = 46+oy; idx = i+1
+            cx = 40+i*18+ox; cy = 31+oy; idx = i+1
             cor = (COR_VERDE   if idx < self.fase_atual_num  else
                    COR_AMBAR   if idx == self.fase_atual_num else
                    COR_TEXTO_DIM)
-            pts = [(cx,cy-6),(cx+6,cy),(cx,cy+6),(cx-6,cy)]
+            pts = [(cx,cy-4),(cx+4,cy),(cx,cy+4),(cx-4,cy)]
             pygame.draw.polygon(self.tela, cor, pts,
                                 0 if idx <= self.fase_atual_num else 1)
 
-        # dica / desafio
-        self._desenhar_moldura((20+ox, 87+oy, LARGURA-40, 50),
+        # Desafio/Dica compacto
+        self._desenhar_moldura((15+ox, 58+oy, LARGURA-30, 34),
                                COR_AMBAR_DIM, titulo="DESAFIO")
         self._desenhar_texto(f"> {fase.hint()}", self.fonte_texto,
-                             COR_AMBAR, 38+ox, 103+oy)
+                             COR_AMBAR, 28+ox, 74+oy)
 
-        # rodapé de teclas
+        # Rodapé de instruções
         if self.fase_atual_num == 1:
-            teclas = "[A/D] ESCOLHER COLUNA    [W] MARCAR ORIGEM    [S] CANCELAR    [F] MOVER"
+            teclas = "[A/D] COLUNA    [W] ORIGEM    [S] CANCELAR    [F] MOVER"
+        elif self.fase_atual_num == 3:
+            teclas = "[W/A/S/D] NAVEGAR NO GRID    [F] CONFIRMAR DIGITO"
+        elif self.fase_atual_num == 4:
+            teclas = "[A/D] SELECIONAR CAMINHO      [F] VIAJAR"
         else:
             teclas = "[A/D] NAVEGAR ACOES    [F] EXECUTAR"
         self._desenhar_texto(teclas, self.fonte_pequena, COR_TEXTO_DIM,
-                             LARGURA//2+ox, ALTURA-30+oy, centro=True)
+                             LARGURA//2+ox, ALTURA-15+oy, centro=True)
 
-        # --- Adicione isto no final do método ---
         segundos_restantes = max(0, self.tempo_total_frames // FPS)
         mins = segundos_restantes // 60
         segs = segundos_restantes % 60
-        cor_timer = COR_VERDE if segundos_restantes > 60 else COR_VERMELHO
+        cor_timer = COR_VERDE if segundos_restantes > 40 else COR_VERMELHO
         
         self._desenhar_texto(f"TEMPO: {mins:02d}:{segs:02d}", self.fonte_sub, cor_timer, 
-                             LARGURA - 140 + ox, 46 + oy, centro=True)
+                             LARGURA - 85 + ox, 31 + oy, centro=True)
         
-    # ─────────────────────────────────────────────────────────────────────
-    # DISPATCHER
-    # ─────────────────────────────────────────────────────────────────────
     def _desenhar_fase(self):
         ox, oy = self._offset_shake()
         self._desenhar_frame_fase(ox, oy)
@@ -368,162 +354,143 @@ class EngineVisual:
         elif self.fase_atual_num == 4: self._desenhar_grafo_visual(ox, oy)
 
     # ─────────────────────────────────────────────────────────────────────
-    # ★  FASE 1 — PILHA  (3 colunas + coluna meta)
+    # FASE 1 — PILHA (Redimensionada)
     # ─────────────────────────────────────────────────────────────────────
     def _desenhar_pilha_visual(self, ox, oy):
         fase = self.fases[1]
-
-        AY = 147 + oy   # início da área de estado
-        AH = 388        # altura
-        self._desenhar_moldura((20+ox, AY, LARGURA-40, AH),
+        AY = 96 + oy
+        AH = 198
+        self._desenhar_moldura((15+ox, AY, LARGURA-30, AH),
                                COR_MOLDURA, titulo="ESTADO DA PILHA")
 
-        BW, BH, GAP = 90, 42, 6
-        BASE_Y = AY + AH - 28   # linha do chão das colunas
-        MAX    = 4               # blocos por coluna
+        BW, BH, GAP = 44, 18, 3
+        BASE_Y = AY + AH - 16
+        MAX    = 4
 
-        # ── Coluna META (referência, à esquerda) ──────────────────────────
-        meta_cx = 90 + ox
+        # Meta
+        meta_cx = 45 + ox
         self._desenhar_texto("META", self.fonte_pequena, COR_ROXO,
-                             meta_cx, AY+16, centro=True, sombra=False)
+                             meta_cx, AY+14, centro=True, sombra=False)
         for i, val in enumerate(fase.meta):
-            bx = meta_cx - 38
-            by = BASE_Y - BH - i*(BH+GAP) - 4
-            pygame.draw.rect(self.tela, (35, 25, 55), (bx, by, 76, BH))
-            pygame.draw.rect(self.tela, COR_ROXO,     (bx, by, 76, BH), 1)
+            bx = meta_cx - 18
+            by = BASE_Y - BH - i*(BH+GAP) - 2
+            pygame.draw.rect(self.tela, (35, 25, 55), (bx, by, 36, BH))
+            pygame.draw.rect(self.tela, COR_ROXO,     (bx, by, 36, BH), 1)
             self._desenhar_texto(str(val), self.fonte_mono_g, COR_ROXO,
                                  meta_cx, by+BH//2, centro=True, sombra=False)
         pygame.draw.line(self.tela, COR_ROXO,
-                         (meta_cx-44, BASE_Y), (meta_cx+44, BASE_Y), 2)
-        # linha divisória vertical
+                         (meta_cx-22, BASE_Y), (meta_cx+22, BASE_Y), 2)
+        
         pygame.draw.line(self.tela, COR_TEXTO_DIM,
-                         (meta_cx+54, AY+10), (meta_cx+54, BASE_Y+10), 1)
+                         (meta_cx+28, AY+10), (meta_cx+28, BASE_Y+8), 1)
 
-        # ── 3 colunas de trabalho ─────────────────────────────────────────
+        # Colunas
         COLUNAS = [
             (fase.inicial,  "INICIAL",  COR_AMBAR, 0),
             (fase.auxiliar, "AUXILIAR", COR_CIANO, 1),
             (fase.final,    "FINAL",    COR_VERDE, 2),
         ]
-        col_xs = [310+ox, 520+ox, 730+ox]
+        col_xs = [140+ox, 250+ox, 360+ox]
 
         for dados, rotulo, cor, col_idx in COLUNAS:
             cx        = col_xs[col_idx]
             is_sel    = (fase.idx_acao == col_idx)
             is_origem = (fase.origem is not None and fase.origem == col_idx)
 
-            # cor de destaque conforme estado
+            if is_origem: dest_cor = COR_VERDE
+            elif is_sel: dest_cor = cor
+            else: dest_cor = tuple(c//4 for c in cor)
+
+            lbl = f"[{rotulo}]" if is_sel else f" {rotulo} "
+            self._desenhar_texto(lbl, self.fonte_pequena, dest_cor,
+                                 cx, AY+14, centro=True, sombra=False)
+
             if is_origem:
-                dest_cor = COR_VERDE        # verde = "esta coluna é a origem"
-            elif is_sel:
-                dest_cor = cor              # cor normal saturada
-            else:
-                dest_cor = tuple(c//4 for c in cor)  # escurecido
+                self._desenhar_texto("<ORIGEM>", self.fonte_pequena, COR_VERDE,
+                                     cx, AY+26, centro=True, sombra=False)
 
-            # rótulo da coluna
-            lbl = f"[ {rotulo} ]" if is_sel else f"  {rotulo}  "
-            self._desenhar_texto(lbl, self.fonte_sub, dest_cor,
-                                 cx, AY+16, centro=True, sombra=False)
-
-            # badge ORIGEM
-            if is_origem:
-                self._desenhar_texto("< ORIGEM >", self.fonte_pequena, COR_VERDE,
-                                     cx, AY+38, centro=True, sombra=False)
-
-            # slots vazios acima dos itens
             for slot in range(len(dados), MAX):
                 bx = cx - BW//2
-                by = BASE_Y - BH - slot*(BH+GAP) - 4
+                by = BASE_Y - BH - slot*(BH+GAP) - 2
                 dim = tuple(max(c//6, 10) for c in cor)
                 pygame.draw.rect(self.tela, dim, (bx, by, BW, BH), 1)
 
-            # blocos com valores (0 = base, último = topo)
             for i, val in enumerate(dados):
                 is_topo = (i == len(dados)-1)
                 bx = cx - BW//2
-                by = BASE_Y - BH - i*(BH+GAP) - 4
+                by = BASE_Y - BH - i*(BH+GAP) - 2
 
-                # fundo do bloco
                 bg = tuple(max(int(c*0.13), 8) for c in cor)
                 pygame.draw.rect(self.tela, bg, (bx, by, BW, BH))
 
-                # borda: grossa e brilhante no topo
                 b_cor   = dest_cor if is_topo else tuple(max(int(c*0.45),10) for c in cor)
-                b_thick = 3 if is_topo else 1
+                b_thick = 2 if is_topo else 1
                 pygame.draw.rect(self.tela, b_cor, (bx, by, BW, BH), b_thick)
 
-                # cantoneiras no topo selecionado
                 if is_topo and is_sel:
                     for ex, ey in [(bx,by),(bx+BW,by),(bx,by+BH),(bx+BW,by+BH)]:
-                        pygame.draw.circle(self.tela, b_cor, (ex, ey), 3)
+                        pygame.draw.circle(self.tela, b_cor, (ex, ey), 2)
 
-                # número
                 n_cor = dest_cor if is_topo else tuple(max(int(c*0.5),10) for c in cor)
                 self._desenhar_texto(str(val), self.fonte_mono_g, n_cor,
                                      cx, by+BH//2, centro=True, sombra=False)
 
-            # label TOPO acima do bloco mais alto
             if dados:
                 ti = len(dados)-1
-                tb = BASE_Y - BH - ti*(BH+GAP) - 4
-                self._desenhar_texto("TOPO v", self.fonte_pequena, dest_cor,
-                                     cx, tb-16, centro=True, sombra=False)
+                tb = BASE_Y - BH - ti*(BH+GAP) - 2
+                self._desenhar_texto("topo v", self.fonte_pequena, dest_cor,
+                                     cx, tb-10, centro=True, sombra=False)
             else:
                 self._desenhar_texto("VAZIA", self.fonte_pequena,
                                      tuple(c//5 for c in cor),
-                                     cx, BASE_Y-90, centro=True, sombra=False)
+                                     cx, BASE_Y-45, centro=True, sombra=False)
 
-            # linha de chão
             pygame.draw.line(self.tela, dest_cor,
-                             (cx-BW//2-8, BASE_Y), (cx+BW//2+8, BASE_Y), 2)
+                             (cx-BW//2-4, BASE_Y), (cx+BW//2+4, BASE_Y), 2)
 
-        # ── seta animada origem → destino ────────────────────────────────
         if fase.origem is not None and fase.origem != fase.idx_acao:
             p   = self._glow()
             ac  = tuple(int(c*(0.55+0.45*p)) for c in COR_TEXTO)
             ax1 = col_xs[fase.origem]
             ax2 = col_xs[fase.idx_acao]
-            ay  = BASE_Y - BH*2 - 24
-            pygame.draw.line(self.tela, ac, (ax1, ay), (ax2, ay), 2)
+            ay  = BASE_Y - BH*2 - 12
+            pygame.draw.line(self.tela, ac, (ax1, ay), (ax2, ay), 1)
             dx = 1 if ax2 > ax1 else -1
             pygame.draw.polygon(self.tela, ac,
-                                [(ax2, ay-7),(ax2+dx*14, ay),(ax2, ay+7)])
-            self._desenhar_texto("mover para ca", self.fonte_pequena, ac,
-                                 (ax1+ax2)//2, ay-18, centro=True, sombra=False)
-
+                                [(ax2, ay-4),(ax2+dx*8, ay),(ax2, ay+4)])
 
     # ─────────────────────────────────────────────────────────────────────
-    # FASE 2 — FILA
+    # FASE 2 — FILA (Redimensionada)
     # ─────────────────────────────────────────────────────────────────────
     def _desenhar_fila_visual(self, ox, oy):
         fase = self.fases[2]
-        AY = 147+oy; AH = 240
-        self._desenhar_moldura((20+ox, AY, LARGURA-40, AH),
+        AY = 96+oy; AH = 198
+        self._desenhar_moldura((15+ox, AY, LARGURA-30, AH),
                                COR_MOLDURA, titulo="ESTADO DA FILA")
 
-        BW, BH = 52, 46
+        BW, BH = 26, 22
 
-        # esteira
-        self._desenhar_texto("ESTEIRA  (frente -> fim):", self.fonte_pequena,
-                             COR_TEXTO_DIM, 38+ox, AY+18)
+        # Esteira
+        self._desenhar_texto("ESTEIRA (frente -> fim):", self.fonte_pequena,
+                             COR_TEXTO_DIM, 30+ox, AY+14)
         for i, letra in enumerate(fase.esteira):
-            bx = 38+ox + i*(BW+8); by = AY+38
+            bx = 30+ox + i*(BW+4); by = AY+26
             is_f = (i == 0)
             cor  = COR_AMBAR if is_f else COR_TEXTO_DIM
-            t    = 3 if is_f else 1
+            t    = 2 if is_f else 1
             pygame.draw.rect(self.tela, (22,16,6), (bx, by, BW, BH))
             pygame.draw.rect(self.tela, cor,       (bx, by, BW, BH), t)
             self._desenhar_texto(letra, self.fonte_mono_g, cor,
                                  bx+BW//2, by+BH//2, centro=True, sombra=False)
             if is_f:
                 self._desenhar_texto("SAIDA", self.fonte_pequena, cor,
-                                     bx+BW//2, by-14, centro=True, sombra=False)
+                                     bx+BW//2, by-10, centro=True, sombra=False)
 
-        # placar
+        # Placar
         self._desenhar_texto("PLACAR:", self.fonte_pequena,
-                             COR_TEXTO_DIM, 38+ox, AY+108)
+                             COR_TEXTO_DIM, 30+ox, AY+64)
         for i in range(len(fase.gabarito)):
-            bx = 38+ox + i*(BW+8); by = AY+128
+            bx = 30+ox + i*(BW+4); by = AY+76
             ok  = i < len(fase.placar)
             cor = COR_VERDE if ok else tuple(c//5 for c in COR_VERDE)
             pygame.draw.rect(self.tela, (8,20,10) if ok else COR_BG, (bx,by,BW,BH))
@@ -532,29 +499,29 @@ class EngineVisual:
             self._desenhar_texto(txt, self.fonte_mono_g, cor,
                                  bx+BW//2, by+BH//2, centro=True, sombra=False)
 
-        # ação selecionada
-        ay2 = AY+AH+10
-        self._desenhar_moldura((20+ox, ay2, LARGURA-40, 90),
+        # Ação Selecionada compactada dentro da moldura principal
+        ay2 = AY + 120
+        self._desenhar_moldura((30+ox, ay2, LARGURA-60, 56),
                                COR_CIANO_DIM, titulo="ACAO SELECIONADA")
         self._desenhar_texto(f"<< {fase.selected_action()} >>",
                              self.fonte_sub, COR_AMBAR,
-                             LARGURA//2+ox, ay2+44, centro=True)
+                             LARGURA//2+ox, ay2+28, centro=True)
 
     # ─────────────────────────────────────────────────────────────────────
-    # FASE 3 — ARRAY
+    # FASE 3 — ARRAY (Redimensionada)
     # ─────────────────────────────────────────────────────────────────────
     def _desenhar_array_visual(self, ox, oy):
         fase = self.fases[3]
-        AY = 147+oy; AH = 168
-        self._desenhar_moldura((20+ox, AY, LARGURA-40, AH),
+        AY = 96+oy; AH = 198
+        self._desenhar_moldura((15+ox, AY, LARGURA-30, AH),
                                COR_MOLDURA, titulo="ESTADO DO ARRAY")
 
-        BW = 104; BH = 56; by = AY+60
+        BW = 50; BH = 26; by = AY+24
         n  = len(fase.sequencia)
-        sx = (LARGURA - n*BW - (n-1)*10)//2 + ox
+        sx = (LARGURA - n*BW - (n-1)*6)//2 + ox
 
         for i in range(n):
-            bx      = sx + i*(BW+10)
+            bx      = sx + i*(BW+6)
             show    = fase.tempo_memorizar > 0 or i < len(fase.usuario)
             is_cur  = fase.tempo_memorizar <= 0 and i == len(fase.usuario)
             preench = i < len(fase.usuario)
@@ -568,7 +535,7 @@ class EngineVisual:
             else:
                 val = "?";               cor = COR_TEXTO_DIM
 
-            thick = 3 if is_cur else 2 if preench else 1
+            thick = 2 if is_cur else 1
             pygame.draw.rect(self.tela, tuple(max(int(c*0.10),8) for c in cor),
                              (bx, by, BW, BH))
             pygame.draw.rect(self.tela, cor, (bx, by, BW, BH), thick)
@@ -576,103 +543,209 @@ class EngineVisual:
                                  bx+BW//2, by+BH//2, centro=True, sombra=False)
             self._desenhar_texto(f"[{i}]", self.fonte_pequena,
                                  tuple(c//2 for c in cor),
-                                 bx+BW//2, by+BH+8, centro=True, sombra=False)
+                                 bx+BW//2, by+BH+6, centro=True, sombra=False)
 
-        ay2 = AY+AH+10
-        self._desenhar_moldura((20+ox, ay2, LARGURA-40, 90),
-                               COR_CIANO_DIM, titulo="ACAO SELECIONADA")
-        self._desenhar_texto(f"<< {fase.selected_action()} >>",
-                             self.fonte_sub, COR_AMBAR,
-                             LARGURA//2+ox, ay2+44, centro=True)
+        # Teclado Virtual Numérico 2D Compacto
+        ay2 = AY + 70
+        self._desenhar_moldura((30+ox, ay2, LARGURA-60, 114),
+                            COR_CIANO_DIM, titulo="ENTRADA")
+
+        grid = [
+            ["7", "8", "9"],
+            ["4", "5", "6"],
+            ["1", "2", "3"],
+        ]
+
+        spacing_x = 60
+        spacing_y = 22
+        start_x = LARGURA // 2 - spacing_x + ox
+        start_y = ay2 + 20
+
+        for row_idx, row in enumerate(grid):
+            for col_idx, acao in enumerate(row):
+                x = start_x + col_idx * spacing_x
+                y = start_y + row_idx * spacing_y
+
+                is_sel = (fase.row == row_idx and fase.col == col_idx)
+                cor = COR_AMBAR if is_sel else COR_TEXTO_DIM
+                esp = 2 if is_sel else 1
+
+                pygame.draw.rect(self.tela, (20, 20, 20), (x-20, y-9, 40, 18))
+                pygame.draw.rect(self.tela, cor, (x-20, y-9, 40, 18), esp)
+                self._desenhar_texto(acao, self.fonte_texto, cor, x, y, centro=True)
+
+        # Botão Reset Integrado na Linha 3
+        reset_x = start_x
+        reset_y = start_y + 3 * spacing_y
+        is_sel_reset = (fase.row == 3)
+
+        cor_reset = COR_ROXO if is_sel_reset else COR_TEXTO_DIM
+        esp_reset = 2 if is_sel_reset else 1
+
+        pygame.draw.rect(self.tela, (20, 20, 20), (reset_x-30, reset_y-9, 60, 18))
+        pygame.draw.rect(self.tela, cor_reset, (reset_x-30, reset_y-9, 60, 18), esp_reset)
+        self._desenhar_texto("NOVA SEQ", self.fonte_pequena, cor_reset, reset_x, reset_y, centro=True)
 
     # ─────────────────────────────────────────────────────────────────────
-    # FASE 4 — GRAFOS
+    # FASE 4 — MAPA DO TESOURO (Redimensionada)
     # ─────────────────────────────────────────────────────────────────────
+    def _desenhar_linha_pontilhada(self, x1, y1, x2, y2, cor, espessura=1, dash_length=4):
+        dx = x2 - x1
+        dy = y2 - y1
+        dist = math.sqrt(dx**2 + dy**2)
+        if dist == 0: return
+        
+        dashes = int(dist / dash_length)
+        for i in range(dashes):
+            if i % 2 == 0:
+                start = i / dashes
+                end = min((i + 1) / dashes, 1)
+                pygame.draw.line(self.tela, cor, 
+                                 (int(x1 + dx * start), int(y1 + dy * start)), 
+                                 (int(x1 + dx * end), int(y1 + dy * end)), espessura)
+
+    def _calcular_posicoes_grafo(self, nos):
+        num_nos = len(nos)
+        MAP_X = 35
+        MAP_Y = 135
+        MAP_W = LARGURA - 70
+        MAP_H = 110
+        posicoes = {}
+        
+        if num_nos <= 4:
+            center_x = MAP_X + MAP_W // 2
+            center_y = MAP_Y + MAP_H // 2
+            raio = min(MAP_W, MAP_H) // 2.5
+            for i, no in enumerate(nos):
+                angulo = (2 * math.pi * i / num_nos) - math.pi / 2
+                posicoes[no] = (
+                    int(center_x + raio * math.cos(angulo)),
+                    int(center_y + raio * math.sin(angulo))
+                )
+        elif num_nos <= 6:
+            nos_por_linha = (num_nos + 1) // 2
+            for i, no in enumerate(nos):
+                linha = i // nos_por_linha
+                coluna = i % nos_por_linha
+                total_na_linha = nos_por_linha if linha == 0 else (num_nos - nos_por_linha)
+                x = MAP_X + (MAP_W // (total_na_linha + 1)) * (coluna + 1)
+                y = MAP_Y + (MAP_H // 3) * (linha + 1)
+                posicoes[no] = (x, y)
+        else:
+            nos_por_linha = (num_nos + 2) // 3
+            for i, no in enumerate(nos):
+                linha = i // nos_por_linha
+                coluna = i % nos_por_linha
+                x = MAP_X + (MAP_W // (nos_por_linha + 1)) * (coluna + 1)
+                y = MAP_Y + (MAP_H // 4) * (linha + 1)
+                posicoes[no] = (x, y)
+        return posicoes
+
     def _desenhar_grafo_visual(self, ox, oy):
         fase = self.fases[4]
-        AY = 147+oy; AH = 248
-        self._desenhar_moldura((20+ox, AY, LARGURA-40, AH),
-                               COR_MOLDURA, titulo="GRAFO DE NAVEGACAO")
+        AY = 96+oy; AH = 198
+        
+        self._desenhar_moldura((15+ox, AY, LARGURA-30, AH),
+                               COR_MOLDURA, titulo="MAPA DO TESOURO")
 
-        # posições fixas para o grafo A-B-C-D
-        nos_pos = {
-            "A": (170, AY+100),
-            "B": (350, AY+50),
-            "C": (350, AY+150),
-            "D": (530, AY+50),
-            "E": (530, AY+150),
-            "F": (710, AY+100),
-        }
+        nos = list(fase.grafo.keys())
+        nos_pos = self._calcular_posicoes_grafo(nos)
 
-        # arestas
+        aresta_selecionada = None
+        if fase._vizinhos and fase.idx_acao < len(fase._vizinhos):
+            prox_no, _ = fase._vizinhos[fase.idx_acao]
+            aresta_selecionada = (fase.no_atual, prox_no)
+
+        # Desenha Arestas (Caminhos)
         for no, vizinhos in fase.grafo.items():
+            if no not in nos_pos: continue
             x1, y1 = nos_pos[no]
             for v, peso in vizinhos:
+                if v not in nos_pos: continue
                 x2, y2 = nos_pos[v]
                 if no < v:
-                    pygame.draw.line(self.tela, COR_TEXTO_DIM,
-                                     (x1+ox, y1), (x2+ox, y2), 1)
-                    mx = (x1+x2)//2+ox; my = (y1+y2)//2
-                    self._desenhar_texto(str(peso), self.fonte_pequena,
-                                         COR_AMBAR, mx, my,
-                                         centro=True, sombra=False)
+                    no_caminho = False
+                    for i in range(len(fase.caminho) - 1):
+                        if (fase.caminho[i] == no and fase.caminho[i+1] == v) or \
+                           (fase.caminho[i] == v and fase.caminho[i+1] == no):
+                            no_caminho = True
+                            break
+                    
+                    is_selecionada = (aresta_selecionada == (no, v) or aresta_selecionada == (v, no))
+                    
+                    if no_caminho:
+                        pygame.draw.line(self.tela, COR_VERDE, (x1+ox, y1), (x2+ox, y2), 3)
+                    elif is_selecionada:
+                        p = self._glow()
+                        cor_sel = tuple(int(c * (0.7 + 0.3 * p)) for c in COR_AMBAR)
+                        pygame.draw.line(self.tela, cor_sel, (x1+ox, y1), (x2+ox, y2), 3)
+                    else:
+                        self._desenhar_linha_pontilhada(x1+ox, y1, x2+ox, y2, COR_TEXTO_DIM, 1)
+                    
+                    mx = (x1+x2)//2+ox
+                    my = (y1+y2)//2
+                    cor_peso = COR_AMBAR if is_selecionada else COR_TEXTO_DIM
+                    self._desenhar_texto(f"{peso}d", self.fonte_pequena, cor_peso, mx, my, centro=True)
 
-        # caminho percorrido
-        for i in range(len(fase.caminho)-1):
-            x1,y1 = nos_pos[fase.caminho[i]]
-            x2,y2 = nos_pos[fase.caminho[i+1]]
-            pygame.draw.line(self.tela, COR_VERDE,
-                             (x1+ox, y1), (x2+ox, y2), 3)
-
-        # nós
+        # Desenha Nós (Marcos Visuais)
         for nome, (nx, ny) in nos_pos.items():
-            is_cur  = nome == fase.no_atual
-            is_alvo = nome == fase.alvo
-            is_ini  = nome == fase.inicio
-            cor = (COR_VERDE   if is_cur  else
-                   COR_AMBAR   if is_alvo else
-                   COR_CIANO   if is_ini  else
-                   COR_TEXTO_DIM)
-            r = 26 if is_cur else 22
-            pygame.draw.circle(self.tela,
-                               tuple(max(int(c*0.15),8) for c in cor),
-                               (nx+ox, ny), r)
-            pygame.draw.circle(self.tela, cor, (nx+ox, ny), r,
-                               3 if is_cur else 1)
-            self._desenhar_texto(nome, self.fonte_sub, cor,
-                                 nx+ox, ny, centro=True, sombra=False)
-            lbl = ("AQUI"   if is_cur  else
-                   "ALVO"   if is_alvo else
-                   "INICIO" if is_ini  else "")
-            if lbl:
-                self._desenhar_texto(lbl, self.fonte_pequena, cor,
-                                     nx+ox, ny+r+12, centro=True, sombra=False)
+            is_cur = nome == fase.no_atual
+            is_tesouro = nome == "Tesouro"
+            is_inicio = nome == "Inicio"
+            
+            if is_cur:
+                cor = COR_VERDE; r = 15
+            elif is_tesouro:
+                cor = COR_AMBAR; r = 15
+            elif is_inicio:
+                cor = COR_CIANO; r = 13
+            else:
+                cor = COR_TEXTO if nome in fase.caminho else COR_TEXTO_DIM; r = 11
 
-        # caminho + custo
-        self._desenhar_texto(
-            f"Caminho: {' -> '.join(fase.caminho)}   |   Custo: {fase.custo}",
-            self.fonte_texto, COR_TEXTO, 38+ox, AY+AH-28)
+            pygame.draw.circle(self.tela, tuple(max(int(c*0.15), 8) for c in cor), (nx+ox, ny), r)
+            esp = 3 if (is_cur or is_tesouro) else 1
+            pygame.draw.circle(self.tela, cor, (nx+ox, ny), r, esp)
+            
+            if is_tesouro:
+                x_size = 6
+                pygame.draw.line(self.tela, COR_VERMELHO, (nx+ox-x_size, ny-x_size), (nx+ox+x_size, ny+x_size), 2)
+                pygame.draw.line(self.tela, COR_VERMELHO, (nx+ox+x_size, ny-x_size), (nx+ox-x_size, ny+x_size), 2)
+            
+            self._desenhar_texto(nome, self.fonte_pequena, cor, nx+ox, ny, centro=True, sombra=True)
+            
+            if is_cur:
+                self._desenhar_texto("VOCE", self.fonte_pequena, COR_VERDE, nx+ox, ny+r+8, centro=True)
+            elif is_tesouro:
+                p = self._glow()
+                cor_pulso = tuple(int(c * (0.6 + 0.4 * p)) for c in COR_AMBAR)
+                self._desenhar_texto("X MARCA", self.fonte_pequena, cor_pulso, nx+ox, ny-r-8, centro=True)
 
-        ay2 = AY+AH+10
-        self._desenhar_moldura((20+ox, ay2, LARGURA-40, 90),
-                               COR_CIANO_DIM, titulo="ACAO SELECIONADA")
-        self._desenhar_texto(f"<< {fase.selected_action()} >>",
-                             self.fonte_sub, COR_AMBAR,
-                             LARGURA//2+ox, ay2+44, centro=True)
+        # Rodapé de Informação do Mapa
+        info_y = AY + AH - 14
+        jornada_texto = " > ".join(fase.caminho[-3:] if len(fase.caminho) > 3 else fase.caminho)
+        if len(fase.caminho) > 3: jornada_texto = "...>" + jornada_texto
+        
+        self._desenhar_texto(f"Mapa: {jornada_texto}", self.fonte_pequena, COR_TEXTO, 25+ox, info_y)
+        
+        cor_dias = COR_VERDE if fase.custo <= fase._custo_minimo else COR_VERMELHO
+        self._desenhar_texto(f"Dias: {fase.custo}/{fase._custo_minimo}", self.fonte_texto, cor_dias, LARGURA - 75 + ox, info_y, centro=True)
+        
+        if fase._vizinhos and fase.idx_acao < len(fase._vizinhos):
+            prox_no, dias = fase._vizinhos[fase.idx_acao]
+            p = self._glow()
+            cor_instrucao = tuple(int(c * (0.7 + 0.3 * p)) for c in COR_AMBAR)
+            self._desenhar_texto(f"Destino: {prox_no} ({dias}d)", self.fonte_sub, cor_instrucao, LARGURA//2+ox, AY+14, centro=True)
 
     # ─────────────────────────────────────────────────────────────────────
-    # TELA FINAL
+    # TELA FINAL (Redimensionada)
     # ─────────────────────────────────────────────────────────────────────
     def _desenhar_tela_final(self, titulo, cor, subtitulo):
-        bw, bh = 640, 260
+        bw, bh = 380, 180
         bx, by = (LARGURA-bw)//2, (ALTURA-bh)//2
         self._desenhar_moldura((bx, by, bw, bh), cor)
-        self._desenhar_texto(titulo, self.fonte_titulo, cor,
-                             LARGURA//2, by+70, centro=True)
-        self._desenhar_texto(subtitulo, self.fonte_texto, COR_TEXTO,
-                             LARGURA//2, by+130, centro=True)
-        self._desenhar_texto("[F] VOLTAR AO MENU", self.fonte_sub, COR_AMBAR,
-                             LARGURA//2, by+210, centro=True)
+        self._desenhar_texto(titulo, self.fonte_titulo, cor, LARGURA//2, by+40, centro=True)
+        self._desenhar_texto(subtitulo, self.fonte_texto, COR_TEXTO, LARGURA//2, by+85, centro=True)
+        self._desenhar_texto("[F] VOLTAR AO MENU", self.fonte_sub, COR_AMBAR, LARGURA//2, by+135, centro=True)
 
 
 if __name__ == "__main__":
